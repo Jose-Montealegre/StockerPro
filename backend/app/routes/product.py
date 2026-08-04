@@ -1,10 +1,14 @@
 from fastapi import APIRouter
 from app.schemas.product import Product
+from app.services.product_service import create_product
 
 router = APIRouter()
 @router.post("/products")
-def create_product(product: Product):
+def create_product_route(product: Product):
+    result = create_product(product)
+    
     return {
-        "mensaje": "Producto recibido correctamente",
-        "producto": product
+        "mensaje": "producto recibido correctamente",
+        "producto": result
     }
+    
