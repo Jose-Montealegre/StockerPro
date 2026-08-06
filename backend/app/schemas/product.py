@@ -7,7 +7,11 @@ class ProductCreate(BaseModel):
     precio: float
     stock: int
     
-
+class ProductUpdate(BaseModel):
+    nombre: str
+    descripcion: str
+    precio: float
+    stock: int
 class ProductResponse(BaseModel):
     id: int
     nombre: str

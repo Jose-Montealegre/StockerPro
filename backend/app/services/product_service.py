@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from app.schemas.product import ProductCreate, ProductResponse
+from app.schemas.product import (ProductCreate,ProductUpdate, ProductResponse)
 
 
 products =[]
@@ -37,6 +37,36 @@ def get_product_by_id(id: int):
     for product in products:
         if product.id == id:
             return product
+    
+    
+    raise HTTPException(
+        status_code=404,
+        detail="Producto no encontrado"
+    )
+
+
+def update_product(id: int, product: ProductUpdate):
+    for existing_product in products:
+        if existing_product.id == id:
+            
+            existing_product.nombre = product.nombre
+            existing_product.descripcion = product.descripcion
+            existing_product.precio = product.precio
+            existing_product.stock = product.stock
+            
+            return existing_product
+        
+    raise HTTPException(
+        status_code=404,
+        detail="Producto no encontrado"
+    )
+
+
+def delete_product(id: int):
+    for product in products:
+        if product.id == id:
+            products.remove(product)
+            return
 
     raise HTTPException(
         status_code=404,

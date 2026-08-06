@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
-from app.schemas.product import ProductCreate, ProductResponse
-from app.services.product_service import (create_product, get_products, get_product_by_id)
+from app.schemas.product import (ProductCreate,ProductUpdate, ProductResponse)
+from app.services.product_service import (create_product, get_products, get_product_by_id, update_product, delete_product)
 
 router = APIRouter()
 
@@ -27,6 +27,27 @@ def get_products_route():
     response_model=ProductResponse,
     summary="Obtener un producto por ID",
     description="Permite consultar un producto específico mediante su identificador."
+    
 )
 def get_product_route(id: int):
     return get_product_by_id(id)
+
+
+@router.put(
+    "/products/{id}",
+    response_model=ProductResponse,
+    summary="Actualizar un producto",
+    description="Permite actualizar la informacion de un producto existente."
+)
+def update_product_route(id:int, product: ProductUpdate):
+    return update_product(id, product)
+
+@router.delete(
+    "/products/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar un producto",
+    description="Permite eliminar un producto mediante su identificador"
+)
+def delete_product_route(id: int):
+    delete_product(id)
+
