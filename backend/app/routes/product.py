@@ -1,6 +1,8 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 from app.schemas.product import (ProductCreate,ProductUpdate, ProductResponse)
 from app.services.product_service import (create_product, get_products, get_product_by_id, update_product, delete_product)
+from sqlalchemy.orm import Session
+from app.database import get_db
 
 router = APIRouter()
 
@@ -10,8 +12,11 @@ router = APIRouter()
     summary="Crear un nuevo producto", 
     description="Permite registrar un nuevo producto en el sistema."
 )
-def create_product_route(product: ProductCreate):
-    return create_product(product)
+def create_product_route(
+    product: ProductCreate,
+    db: Session = Depends(get_db)
+):
+    return create_product(db, product)
 
 
 @router.get(
@@ -19,8 +24,10 @@ def create_product_route(product: ProductCreate):
     summary="Listar todos los productos",
     description="Obtiene la lista de todos los productos registrados"
 )
-def get_products_route():
-    return get_products()
+def get_products_route(
+    db: Session = Depends(get_db)
+):
+    return get_products(db)
 
 @router.get(
     "/products/{id}",
@@ -29,8 +36,11 @@ def get_products_route():
     description="Permite consultar un producto específico mediante su identificador."
     
 )
-def get_product_route(id: int):
-    return get_product_by_id(id)
+def get_product_route(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    return get_product_by_id(db, id)
 
 
 @router.put(
@@ -39,8 +49,12 @@ def get_product_route(id: int):
     summary="Actualizar un producto",
     description="Permite actualizar la informacion de un producto existente."
 )
-def update_product_route(id:int, product: ProductUpdate):
-    return update_product(id, product)
+def update_product_route(
+    id: int,
+    product:ProductUpdate,
+    db: Session = Depends(get_db)
+):
+    return update_product(db, id, product)
 
 @router.delete(
     "/products/{id}",
@@ -48,6 +62,9 @@ def update_product_route(id:int, product: ProductUpdate):
     summary="Eliminar un producto",
     description="Permite eliminar un producto mediante su identificador"
 )
-def delete_product_route(id: int):
-    delete_product(id)
+def delete_product_route(
+    id:int,
+    db:Session = Depends(get_db)
+):
+    delete_product(db, id)
 

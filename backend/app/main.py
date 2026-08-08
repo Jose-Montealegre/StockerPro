@@ -2,6 +2,12 @@ from fastapi import FastAPI
 from app.routes.health import router as health_router
 from app.routes.product import router as product_router
 from app.config import settings
+from app.database import Base, engine
+from app.models.product import Product
+Base.metadata.create_all(bind=engine)
+
+
+
 
 app = FastAPI(
     title=settings.APP_NAME,
