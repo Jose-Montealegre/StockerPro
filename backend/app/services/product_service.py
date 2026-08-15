@@ -5,24 +5,29 @@ from app.models.product import Product
 
 
 def create_product(db: Session, product: ProductCreate):
-    if product.precio < 1000:
+    if product.stock < 0:
         raise HTTPException(
             status_code=400,
-            detail="El precio debe ser mayor o igual a 1000"
+            detail="El stock no puede ser negativo"
         )
-    
     new_product = Product(
-        nombre=product.nombre,
+        nombre=product.nombre,  
         descripcion=product.descripcion,
         precio=product.precio,
         stock=product.stock
     )
     
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
+    try:
         
-    return new_product
+        db.add(new_product)
+        db.commit()
+        db.refresh(new_product)
+        
+        return new_product
+
+    except Exception:
+        db.rollback()
+        raise
 
 def get_products(db: Session):
     return db.query(Product).all()
@@ -41,6 +46,12 @@ def get_product_by_id(db: Session, id: int):
 
 
 def update_product(db: Session, id: int, product: ProductUpdate):
+    if product.stock < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="El stock no puede ser negativo"
+        )
+        
     existing_product = db.query(Product).filter(Product.id == id).first()
 
     if not existing_product:
@@ -49,15 +60,20 @@ def update_product(db: Session, id: int, product: ProductUpdate):
             detail="Producto no encontrado"
         )
 
-    existing_product.nombre = product.nombre
-    existing_product.descripcion = product.descripcion
-    existing_product.precio = product.precio
-    existing_product.stock = product.stock
+    try:
+        existing_product.nombre = product.nombre
+        existing_product.descripcion = product.descripcion
+        existing_product.precio = product.precio
+        existing_product.stock = product.stock
 
-    db.commit()
-    db.refresh(existing_product)
+        db.commit()
+        db.refresh(existing_product)
 
-    return existing_product
+        return existing_product
+
+    except Exception:
+        db.rollback()
+        raise
 
 
 def delete_product(db: Session, id: int):

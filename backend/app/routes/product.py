@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.post(
     "/products",
+    response_model=ProductResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Crear un nuevo producto", 
     description="Permite registrar un nuevo producto en el sistema."
@@ -21,6 +22,7 @@ def create_product_route(
 
 @router.get(
     "/products",
+    response_model=list[ProductResponse],
     summary="Listar todos los productos",
     description="Obtiene la lista de todos los productos registrados"
 )

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ProductCreate(BaseModel):
@@ -19,4 +19,4 @@ class ProductResponse(BaseModel):
     precio: float
     stock: int
     
-    
+model_config = ConfigDict(from_attributes=True)
