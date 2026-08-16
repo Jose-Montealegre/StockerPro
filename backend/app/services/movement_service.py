@@ -17,12 +17,6 @@ def create_movement(db: Session, movement: MovementCreate):
             detail="Producto no encontrado"
         )
 
-    if movement.cantidad <= 0:
-        raise HTTPException(
-            status_code=400,
-            detail="La cantidad debe ser mayor que cero"
-        )
-
     if movement.tipo == "ENTRADA":
         product.stock += movement.cantidad
 
@@ -34,12 +28,6 @@ def create_movement(db: Session, movement: MovementCreate):
             )
 
         product.stock -= movement.cantidad
-
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="El tipo de movimiento debe ser ENTRADA o SALIDA"
-        )
 
     new_movement = Movement(
         product_id=movement.product_id,
