@@ -16,6 +16,8 @@ def create_movement(db: Session, movement: MovementCreate):
             status_code=404,
             detail="Producto no encontrado"
         )
+        
+    stock_anterior = product.stock
 
     if movement.tipo == "ENTRADA":
         product.stock += movement.cantidad
@@ -28,11 +30,16 @@ def create_movement(db: Session, movement: MovementCreate):
             )
 
         product.stock -= movement.cantidad
-
+        
+    stock_resultante = product.stock
+    
+    
     new_movement = Movement(
         product_id=movement.product_id,
         tipo=movement.tipo,
-        cantidad=movement.cantidad
+        cantidad=movement.cantidad,
+        stock_anterior=stock_anterior,
+        stock_resultante=stock_resultante
     )
 
     try:

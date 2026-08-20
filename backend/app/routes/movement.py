@@ -38,6 +38,7 @@ def get_movements_route(
 ):
     return get_movements(db)
 
+
 @router.get(
     "/movements/{id}",
     response_model=MovementResponse,

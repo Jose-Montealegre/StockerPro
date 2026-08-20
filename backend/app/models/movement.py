@@ -23,7 +23,17 @@ class Movement(Base):
         Integer,
         nullable=False
     )
+    
+    stock_anterior = Column(
+        Integer,
+        nullable=False
+    )
 
+    stock_resultante = Column(
+        Integer,
+        nullable=False
+    )
+    
     product = relationship(
         "Product",
         back_populates="movements"
