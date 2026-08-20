@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -32,6 +32,12 @@ class Movement(Base):
     stock_resultante = Column(
         Integer,
         nullable=False
+    )
+    
+    fecha = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=True
     )
     
     product = relationship(

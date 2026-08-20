@@ -1,4 +1,5 @@
 from enum import Enum
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -26,8 +27,9 @@ class MovementResponse(BaseModel):
     id: int
     tipo: MovementType
     cantidad: int
-    stock_anterior: int
-    stock_resultante: int
+    stock_anterior: int | None
+    stock_resultante: int | None
+    fecha: datetime | None
     
     
     producto: ProductMovementResponse = Field(
