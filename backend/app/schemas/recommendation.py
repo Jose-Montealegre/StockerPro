@@ -6,6 +6,8 @@ class RecommendationResponse(BaseModel):
     producto: str
     stock_actual: int
     estado: str 
+    salidas_ultimos_7_dias: int
+    rotacion: str
     recomendacion: str
     
     model_config = ConfigDict(from_attributes=True)
