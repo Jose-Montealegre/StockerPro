@@ -52,7 +52,20 @@ def classify_rotation(total_outputs: int):
 
     else:
         return "ROTACION_ALTA"
+    
 
+def calculate_restock_quantity(
+    stock_actual: int,
+    total_outputs: int
+):
+    stock_objetivo = total_outputs * 2
+    
+    cantidad_reponer = stock_objetivo - stock_actual
+    
+    if cantidad_reponer < 0:
+        return 0 
+    
+    return cantidad_reponer
 
 def get_recommendations(db: Session):
     products = db.query(Product).all()
@@ -68,17 +81,31 @@ def get_recommendations(db: Session):
         )
 
         rotacion = classify_rotation(total_salidas)
+        
+        cantidad_sugerida = calculate_restock_quantity(
+        product.stock,
+        total_salidas
+    )
 
         if product.stock == 0:
             estado = "AGOTADO"
             recomendacion = (
-                "Producto agotado. Se requiere reposición inmediata"
+                f"Producto agotado. Se recomienda reponer"
+                f"{cantidad_sugerida} unidades"
             )
 
         elif product.stock <= 5:
             estado = "STOCK_BAJO"
             recomendacion = (
-                "Se recomienda reponer inventario"
+                f"Stock bajo. Se recomienda reponer "
+                f"{cantidad_sugerida} unidades"
+            )
+
+        elif rotacion == "ROTACION_ALTA":
+            estado = "ROTACION_ALTA"
+            recomendacion = (
+                f"Producto con alta rotación. Se recomienda reponer "
+                f"aproximadamente {cantidad_sugerida} unidades"
             )
 
         else:
@@ -92,6 +119,7 @@ def get_recommendations(db: Session):
                 "estado": estado,
                 "salidas_ultimos_7_dias": total_salidas,
                 "rotacion": rotacion,
+                "cantidad_sugerida_reposicion": cantidad_sugerida,
                 "recomendacion": recomendacion
             }
         )

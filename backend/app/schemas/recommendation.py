@@ -8,6 +8,7 @@ class RecommendationResponse(BaseModel):
     estado: str 
     salidas_ultimos_7_dias: int
     rotacion: str
+    cantidad_sugerida_reposicion: int
     recomendacion: str
     
     model_config = ConfigDict(from_attributes=True)
