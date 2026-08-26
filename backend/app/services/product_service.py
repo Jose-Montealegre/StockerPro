@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from app.schemas.product import ProductCreate,ProductUpdate
 from sqlalchemy.orm import Session
 from app.models.product import Product
+from app.models.category import Category
 
 
 def create_product(db: Session, product: ProductCreate):
@@ -10,19 +11,31 @@ def create_product(db: Session, product: ProductCreate):
             status_code=400,
             detail="El stock no puede ser negativo"
         )
+
+    if product.category_id is not None:
+        category = db.query(Category).filter(
+            Category.id == product.category_id
+        ).first()
+
+        if not category:
+            raise HTTPException(
+                status_code=404,
+                detail="Categoría no encontrada"
+            )
+
     new_product = Product(
-        nombre=product.nombre,  
+        nombre=product.nombre,
         descripcion=product.descripcion,
         precio=product.precio,
-        stock=product.stock
+        stock=product.stock,
+        category_id=product.category_id
     )
-    
+
     try:
-        
         db.add(new_product)
         db.commit()
         db.refresh(new_product)
-        
+
         return new_product
 
     except Exception:
@@ -51,8 +64,10 @@ def update_product(db: Session, id: int, product: ProductUpdate):
             status_code=400,
             detail="El stock no puede ser negativo"
         )
-        
-    existing_product = db.query(Product).filter(Product.id == id).first()
+
+    existing_product = db.query(Product).filter(
+        Product.id == id
+    ).first()
 
     if not existing_product:
         raise HTTPException(
@@ -60,11 +75,23 @@ def update_product(db: Session, id: int, product: ProductUpdate):
             detail="Producto no encontrado"
         )
 
+    if product.category_id is not None:
+        category = db.query(Category).filter(
+            Category.id == product.category_id
+        ).first()
+
+        if not category:
+            raise HTTPException(
+                status_code=404,
+                detail="Categoría no encontrada"
+            )
+
     try:
         existing_product.nombre = product.nombre
         existing_product.descripcion = product.descripcion
         existing_product.precio = product.precio
         existing_product.stock = product.stock
+        existing_product.category_id = product.category_id
 
         db.commit()
         db.refresh(existing_product)
