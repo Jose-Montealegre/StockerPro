@@ -1,10 +1,12 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone
 
 from app.models.customer import Customer
 from app.models.product import Product
 from app.models.sale import Sale
 from app.models.sale_detail import SaleDetail
+from app.models.movement import Movement
 from app.schemas.sale import SaleCreate
 
 
@@ -77,8 +79,23 @@ def create_sale(
             )
 
             db.add(detail)
-
+            
+            stock_anterior = product.stock
+            
             product.stock -= item.cantidad
+            
+            stock_resultante = product.stock
+            
+            movement =  Movement(
+                product_id=product.id,
+                tipo="SALIDA",
+                cantidad=item.cantidad,
+                stock_anterior=stock_anterior,
+                stock_resultante=stock_resultante,
+                fecha=datetime.now(timezone.utc)
+            )
+
+            db.add(movement)
 
             total_sale += subtotal
 
