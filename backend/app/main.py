@@ -15,6 +15,7 @@ from app.routes.category import router as category_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.customer import router as customer_router
 from app.routes.sale import router as sale_router
+from app.routes.report import router as report_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -35,6 +36,7 @@ app.include_router(category_router)
 app.include_router(dashboard_router)
 app.include_router(customer_router)
 app.include_router(sale_router)
+app.include_router(report_router)
 
 @app.get("/")
 def root():
