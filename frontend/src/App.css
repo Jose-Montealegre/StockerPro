@@ -1,27 +1,77 @@
 .app {
+  display: flex;
   min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: #18392b;
+  color: white;
+  padding: 28px 20px;
+}
+
+.brand {
+  margin-bottom: 40px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.brand p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #d1d5db;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #e5e7eb;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #24543f;
+}
+
+.menu-item.active {
+  background: #f97316;
+  color: white;
+  font-weight: bold;
+}
+
+.content {
+  flex: 1;
+  background: #f5f6f8;
 }
 
 .header {
   padding: 24px 40px;
+  background: white;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.header h1 {
+.header h2 {
   margin: 0;
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .header p {
   margin: 6px 0 0;
-}
-
-.welcome {
-  padding: 40px;
-}
-
-.welcome h2 {
-  margin-top: 0;
+  color: #6b7280;
 }
 
 .dashboard {
@@ -46,11 +96,11 @@
 }
 
 .card {
+  width: 200px;
+  padding: 24px;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 24px;
-  width: 200px;
+  border-radius: 12px;
 }
 
 .card h3 {
@@ -63,4 +113,56 @@
   margin: 12px 0 0;
   font-size: 32px;
   font-weight: bold;
+  color: #18392b;
+}
+
+.table-container {
+  margin-top: 30px;
+  overflow-x: auto;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.products-table th,
+.products-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.products-table th {
+  background: #18392b;
+  color: white;
+}
+
+.products-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-primary {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #f97316;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #ea580c;
 }
