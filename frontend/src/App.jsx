@@ -6,7 +6,20 @@ function App() {
   const [error, setError] = useState(false)
   const [section, setSection] = useState('dashboard')
   const [productos, setProductos] = useState([])
-  const [, setMostrarFormulario] = useState(false)
+  const [categorias, setCategorias] =  useState([])
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState('')
+  const [errorProducto, setErrorProducto] = useState('')
+  const [nuevoProducto, setNuevoProducto] = useState({
+    nombre: '',
+    descripcion: '',
+    precio: '',
+    stock: '',
+    category_id: ''
+  })
+  
+  
 
 useEffect(() => {
   fetch('http://127.0.0.1:8000/dashboard/summary')
@@ -28,6 +41,16 @@ useEffect(() => {
   .catch((error) => {
     console.error('Error al cargar los productos:', error)
   })
+
+fetch('http://127.0.0.1:8000/categories')
+  .then((response) => response.json())
+  .then((data) => {
+    console.log('Categorías recibidas:', data)
+    setCategorias(data)
+  })
+  .catch((error) => {
+    console.error('Error al cargar las categorías:', error)
+  })  
 
 }, [])
 
@@ -139,7 +162,7 @@ if (!dashboard) {
 
     <section className="dashboard">
       <div className="products-header">
-  <div className="dashboard-title">
+        <div className="dashboard-title">
     <h2>Productos registrados</h2>
     <p>Listado actual de productos del inventario.</p>
   </div>
@@ -152,6 +175,198 @@ if (!dashboard) {
     + Nuevo producto
   </button>
 </div>
+
+{mensaje && (
+  <div className="message success-message">
+    {mensaje}
+  </div>
+)}
+
+{errorProducto && (
+  <div className="message error-message">
+    {errorProducto}
+  </div>
+)}
+
+{mostrarFormulario && (
+  <div className="product-form">
+    <div className="form-header">
+      <h3>Nuevo producto</h3>
+
+      <button
+        type="button"
+        className="btn-close"
+        onClick={() => setMostrarFormulario(false)}
+      >
+        Cerrar
+      </button>
+    </div>
+
+    <form 
+    className="form-product"
+    onSubmit={(e) => {
+  e.preventDefault()
+  setMensaje('')
+  setErrorProducto('')
+
+  if (guardando) {
+    return
+  }
+
+  setGuardando(true)
+
+  const productoParaEnviar = {
+    nombre: nuevoProducto.nombre,
+    descripcion: nuevoProducto.descripcion,
+    precio: Number(nuevoProducto.precio),
+    stock: Number(nuevoProducto.stock),
+    category_id: Number(nuevoProducto.category_id)
+  }
+
+  fetch('http://127.0.0.1:8000/products', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(productoParaEnviar)
+})
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error('No se pudo crear el producto')
+    }
+
+    return response.json()
+  })
+  .then((data) => {
+    console.log('Producto creado:', data)
+
+    setProductos([...productos, data])
+
+    setNuevoProducto({
+      nombre: '',
+      descripcion: '',
+      precio: '',
+      stock: '',
+      category_id: ''
+    })
+
+    setMostrarFormulario(false)
+    setMensaje('Producto creado correctamente')
+
+    fetch('http://127.0.0.1:8000/dashboard/summary')
+      .then((response) => response.json())
+      .then((data) => {
+        setDashboard(data)
+      })
+  })
+  .catch((error) => {
+    console.error('Error al crear el producto:', error)
+    setErrorProducto('Ocurrió un error al crear el producto')
+  })
+  .finally(() => {
+    setGuardando(false)
+  })
+}}
+    >
+  <div className="form-group">
+    <label htmlFor="nombre">Nombre</label>
+    <input
+      id="nombre"
+      type="text"
+      placeholder="Ej: Teclado Logitech K120"
+      value={nuevoProducto.nombre}
+      onChange={(e) =>
+        setNuevoProducto({
+          ...nuevoProducto,
+          nombre: e.target.value
+        })
+      }
+    />
+  </div>
+
+  <div className="form-group">
+    <label htmlFor="descripcion">Descripción</label>
+    <input
+      id="descripcion"
+      type="text"
+      placeholder="Descripción del producto"
+      value={nuevoProducto.descripcion}
+      onChange={(e) =>
+        setNuevoProducto({
+          ...nuevoProducto,
+          descripcion: e.target.value
+        })
+      }
+    />
+  </div>
+
+  <div className="form-row">
+    <div className="form-group">
+      <label htmlFor="precio">Precio</label>
+      <input
+        id="precio"
+        type="number"
+        min="0"
+        placeholder="Ej: 85000"
+        value={nuevoProducto.precio}
+        onChange={(e) =>
+          setNuevoProducto({
+            ...nuevoProducto,
+            precio: e.target.value
+          })
+        }
+      />
+    </div>
+
+    <div className="form-group">
+      <label htmlFor="stock">Stock inicial</label>
+      <input
+        id="stock"
+        type="number"
+        min="0"
+        placeholder="Ej: 10"
+        value={nuevoProducto.stock}
+        onChange={(e) =>
+          setNuevoProducto({
+            ...nuevoProducto,
+            stock: e.target.value
+          })
+        }
+      />
+    </div>
+  </div>
+
+  <div className="form-group">
+    <label htmlFor="categoria">Categoría</label>
+    <select id="categoria"
+    value={nuevoProducto.category_id}
+    onChange={(e) =>
+      setNuevoProducto({
+        ...nuevoProducto,
+        category_id: e.target.value
+      })
+    }
+  >
+    <option value="">Seleccionar categoría</option>
+
+    {categorias.map((categoria) => (
+      <option key={categoria.id} value={categoria.id}>
+        {categoria.nombre}
+      </option>
+    ))}
+    </select>
+  </div>
+
+  <button
+  className="btn-primary"
+  type="submit"
+  disabled={guardando}
+>
+  {guardando ? 'Guardando...' : 'Guardar producto'}
+</button>
+</form>
+  </div>
+)}
 
       <div className="table-container">
         <table className="products-table">
