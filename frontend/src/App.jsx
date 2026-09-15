@@ -11,6 +11,9 @@ function App() {
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [errorProducto, setErrorProducto] = useState('')
+  const [mensajeMovimiento, setMensajeMovimiento] = useState('')
+  const [errorMovimiento, setErrorMovimiento] = useState('')
+  const [guardandoMovimiento, setGuardandoMovimiento] = useState(false)
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre: '',
     descripcion: '',
@@ -18,6 +21,11 @@ function App() {
     stock: '',
     category_id: ''
   })
+  const [nuevoMovimiento, setNuevoMovimiento] = useState({
+  product_id: '',
+  tipo: 'ENTRADA',
+  cantidad: ''
+})
   
   
 
@@ -62,6 +70,10 @@ if (!dashboard) {
   return <p>Cargando datos...</p>
 }
 
+const productoSeleccionado = productos.find(
+  (producto) => producto.id === Number(nuevoMovimiento.product_id)
+)
+
   return (
   <main className="app">
     <aside className="sidebar">
@@ -87,12 +99,12 @@ if (!dashboard) {
             Productos
           </button>
 
-        <button className="menu-item" type="button">
+          <button
+          className={`menu-item ${section === 'inventario' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setSection('inventario')}
+          >
           Inventario
-        </button>
-
-        <button className="menu-item" type="button">
-          Clientes
         </button>
 
         <button className="menu-item" type="button">
@@ -230,13 +242,15 @@ if (!dashboard) {
   },
   body: JSON.stringify(productoParaEnviar)
 })
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error('No se pudo crear el producto')
-    }
+  .then(async (response) => {
+  const data = await response.json()
 
-    return response.json()
-  })
+  if (!response.ok) {
+    throw new Error(data.detail || 'No se pudo registrar el movimiento')
+  }
+
+  return data
+})
   .then((data) => {
     console.log('Producto creado:', data)
 
@@ -393,6 +407,176 @@ if (!dashboard) {
           </tbody>
         </table>
       </div>
+    </section>
+  </>
+)}
+
+{section === 'inventario' && (
+  <>
+    <header className="header">
+      <h2>Inventario</h2>
+      <p>Control de entradas y salidas de productos</p>
+    </header>
+
+    <section className="dashboard">
+      <div className="dashboard-title">
+        <h2>Movimientos de inventario</h2>
+        <p>Registra entradas y salidas de productos.</p>
+      </div>
+      {mensajeMovimiento && (
+        <div className="message success-message">
+          {mensajeMovimiento}
+        </div>
+      )}
+      {errorMovimiento && (
+        <div className="message error-message">
+          {errorMovimiento}
+        </div>
+      )}
+      <form
+  className="product-form"
+  onSubmit={(e) => {
+    e.preventDefault()
+
+    setMensajeMovimiento('')
+    setErrorMovimiento('')
+
+    if (guardandoMovimiento) {
+      return
+    }
+
+    setGuardandoMovimiento(true)
+
+    const movimientoParaEnviar = {
+      product_id: Number(nuevoMovimiento.product_id),
+      tipo: nuevoMovimiento.tipo,
+      cantidad: Number(nuevoMovimiento.cantidad)
+    }
+
+    fetch('http://127.0.0.1:8000/movements', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(movimientoParaEnviar)
+})
+  .then(async (response) => {
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.detail || 'No se pudo registrar el movimiento')
+  }
+
+  return data
+})
+  .then((data) => {
+  console.log('Movimiento registrado:', data)
+
+  setMensajeMovimiento('Movimiento registrado correctamente')
+
+  setNuevoMovimiento({
+    ...nuevoMovimiento,
+    cantidad: ''
+  })
+
+  fetch('http://127.0.0.1:8000/products')
+    .then((response) => response.json())
+    .then((data) => {
+      setProductos(data)
+    })
+
+    fetch('http://127.0.0.1:8000/dashboard/summary')
+  .then((response) => response.json())
+  .then((data) => {
+    setDashboard(data)
+  })
+})
+  .catch((error) => {
+  console.error('Error al registrar el movimiento:', error)
+  setErrorMovimiento(error.message)
+})
+.finally(() => {
+  setGuardandoMovimiento(false)
+})
+  }}
+>
+  <div className="form-group">
+    <label htmlFor="producto-movimiento">Producto</label>
+
+    <select
+      id="producto-movimiento"
+      value={nuevoMovimiento.product_id}
+      onChange={(e) =>
+        setNuevoMovimiento({
+          ...nuevoMovimiento,
+          product_id: e.target.value
+        })
+      }
+    >
+      <option value="">Seleccionar producto</option>
+
+      {productos.map((producto) => (
+        <option key={producto.id} value={producto.id}>
+          {producto.nombre} — Stock: {producto.stock}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {productoSeleccionado && (
+  <div className="card">
+    <h3>Stock actual</h3>
+    <p>{productoSeleccionado.stock}</p>
+  </div>
+)}
+
+<div className="form-row">
+  <div className="form-group">
+    <label htmlFor="tipo-movimiento">Tipo de movimiento</label>
+
+    <select
+      id="tipo-movimiento"
+      value={nuevoMovimiento.tipo}
+      onChange={(e) =>
+        setNuevoMovimiento({
+          ...nuevoMovimiento,
+          tipo: e.target.value
+        })
+      }
+    >
+      <option value="ENTRADA">ENTRADA</option>
+      <option value="SALIDA">SALIDA</option>
+    </select>
+  </div>
+
+  <div className="form-group">
+    <label htmlFor="cantidad-movimiento">Cantidad</label>
+
+    <input
+      id="cantidad-movimiento"
+      type="number"
+      min="1"
+      placeholder="Ej: 5"
+      value={nuevoMovimiento.cantidad}
+      onChange={(e) =>
+        setNuevoMovimiento({
+          ...nuevoMovimiento,
+          cantidad: e.target.value
+        })
+      }
+    />
+  </div>
+</div>
+<button
+  className="btn-primary"
+  type="submit"
+  disabled={guardandoMovimiento}
+>
+  {guardandoMovimiento ? 'Registrando...' : 'Registrar movimiento'}
+</button>
+
+</form>
+
     </section>
   </>
 )}
