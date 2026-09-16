@@ -258,3 +258,21 @@
   color: #991b1b;
   border: 1px solid #fecaca;
 }
+
+.movement-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.movement-badge.entrada {
+  background-color: #e7f5ed;
+  color: #176b45;
+}
+
+.movement-badge.salida {
+  background-color: #fdecec;
+  color: #b42318;
+}

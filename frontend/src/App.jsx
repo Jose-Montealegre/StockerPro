@@ -7,6 +7,7 @@ function App() {
   const [section, setSection] = useState('dashboard')
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] =  useState([])
+  const [movimientos, setMovimientos] = useState([])
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
@@ -59,6 +60,22 @@ fetch('http://127.0.0.1:8000/categories')
   .catch((error) => {
     console.error('Error al cargar las categorías:', error)
   })  
+
+fetch('http://127.0.0.1:8000/movements')
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error('Error al cargar movimientos')
+    }
+
+    return response.json()
+  })
+  .then((data) => {
+    setMovimientos(data)
+    console.log('Movimientos:', data)
+  })
+  .catch((error) => {
+    console.error('Error al cargar movimientos:', error)
+  })
 
 }, [])
 
@@ -490,6 +507,12 @@ const productoSeleccionado = productos.find(
   .then((data) => {
     setDashboard(data)
   })
+
+    fetch('http://127.0.0.1:8000/movements')
+  .then((response) => response.json())
+  .then((data) => {
+    setMovimientos(data)
+  })
 })
   .catch((error) => {
   console.error('Error al registrar el movimiento:', error)
@@ -576,6 +599,53 @@ const productoSeleccionado = productos.find(
 </button>
 
 </form>
+
+<div className="products-table">
+  <div className="dashboard-title">
+    <h2>Historial de movimientos</h2>
+    <p>Consulta las entradas y salidas registradas.</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Tipo</th>
+        <th>Cantidad</th>
+        <th>Stock anterior</th>
+        <th>Stock resultante</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {[...movimientos].reverse().map((movimiento) => (
+        <tr key={movimiento.id}>
+          <td>{movimiento.producto.nombre}</td>
+          <td>
+  <span
+    className={
+      movimiento.tipo === 'ENTRADA'
+        ? 'movement-badge entrada'
+        : 'movement-badge salida'
+    }
+  >
+    {movimiento.tipo}
+  </span>
+</td>
+          <td>{movimiento.cantidad}</td>
+          <td>{movimiento.stock_anterior ?? '-'}</td>
+          <td>{movimiento.stock_resultante ?? '-'}</td>
+          <td>
+  {movimiento.fecha
+    ? new Date(movimiento.fecha).toLocaleString('es-CO')
+    : '-'}
+        </td>
+      </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
     </section>
   </>
