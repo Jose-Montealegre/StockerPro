@@ -40,6 +40,25 @@ const [guardandoCliente, setGuardandoCliente] = useState(false)
 const [mensajeCliente, setMensajeCliente] = useState('')
 const [errorCliente, setErrorCliente] = useState('')
 const [clienteEditando, setClienteEditando] = useState(null)
+const [ventas, setVentas] = useState([])
+
+const [mostrarFormularioVenta, setMostrarFormularioVenta] = useState(false)
+
+const [nuevaVenta, setNuevaVenta] = useState({
+  customer_id: '',
+  items: [
+    {
+      product_id: '',
+      cantidad: ''
+    }
+  ]
+})
+
+const [guardandoVenta, setGuardandoVenta] = useState(false)
+
+const [mensajeVenta, setMensajeVenta] = useState('')
+
+const [errorVenta, setErrorVenta] = useState('')
   
   
 
@@ -105,6 +124,21 @@ fetch('http://127.0.0.1:8000/movements')
     console.error('Error al cargar clientes:', error)
   })
 
+  fetch('http://127.0.0.1:8000/sales')
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error('No se pudieron cargar las ventas')
+    }
+
+    return response.json()
+  })
+  .then((data) => {
+    setVentas(data)
+  })
+  .catch((error) => {
+    console.error('Error al cargar ventas:', error)
+  })
+
 }, [])
 
 if (error) {
@@ -118,6 +152,18 @@ if (!dashboard) {
 const productoSeleccionado = productos.find(
   (producto) => producto.id === Number(nuevoMovimiento.product_id)
 )
+
+const productoVentaSeleccionado = productos.find(
+  (producto) =>
+    producto.id === Number(nuevaVenta.items[0].product_id)
+)
+
+const subtotalVenta = productoVentaSeleccionado
+  ? productoVentaSeleccionado.precio *
+    Number(nuevaVenta.items[0].cantidad || 0)
+  : 0
+
+
 
   return (
   <main className="app">
@@ -160,8 +206,12 @@ const productoSeleccionado = productos.find(
           Clientes
         </button>
 
-        <button className="menu-item" type="button">
-          Ventas
+        <button
+          className={`menu-item ${section === 'ventas' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setSection('ventas')}
+        >
+        Ventas
         </button>
 
         <button className="menu-item" type="button">
@@ -959,6 +1009,254 @@ fetch(urlCliente, {
     </tbody>
   </table>
 </div>
+    </section>
+  </>
+)}
+
+{section === 'ventas' && (
+  <>
+    <header className="header">
+      <h2>Ventas</h2>
+      <p>Registra y consulta las ventas realizadas en Stocker Pro</p>
+    </header>
+
+    <section className="dashboard">
+      <div className="clientes-header">
+        <div className="dashboard-title">
+          <h2>Historial de ventas</h2>
+          <p>Consulta las ventas registradas en el sistema.</p>
+        </div>
+
+        <button
+          className="btn-primary"
+          type="button"
+          onClick={() => setMostrarFormularioVenta(!mostrarFormularioVenta)}
+        >
+          {mostrarFormularioVenta ? 'Cancelar' : '+ Nueva venta'}
+        </button>
+      </div>
+      {mensajeVenta && (
+  <p className="success-message">{mensajeVenta}</p>
+)}
+
+{errorVenta && (
+  <p className="error-message">{errorVenta}</p>
+)}
+{mostrarFormularioVenta && (
+  <form
+  className="product-form"
+  onSubmit={(e) => {
+    e.preventDefault()
+
+    setMensajeVenta('')
+    setErrorVenta('')
+
+    if (guardandoVenta) return
+
+    setGuardandoVenta(true)
+
+    const ventaParaEnviar = {
+      customer_id: Number(nuevaVenta.customer_id),
+      items: nuevaVenta.items.map((item) => ({
+        product_id: Number(item.product_id),
+        cantidad: Number(item.cantidad)
+      }))
+    }
+
+    fetch('http://127.0.0.1:8000/sales', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(ventaParaEnviar)
+    })
+      .then(async (response) => {
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'No se pudo registrar la venta')
+        }
+
+        return data
+      })
+      .then((data) => {
+        setVentas([...ventas, data])
+
+        setMensajeVenta('Venta registrada correctamente')
+
+        setNuevaVenta({
+          customer_id: '',
+          items: [
+            {
+              product_id: '',
+              cantidad: ''
+            }
+          ]
+        })
+
+        setMostrarFormularioVenta(false)
+
+        fetch('http://127.0.0.1:8000/products')
+          .then((response) => response.json())
+          .then((data) => setProductos(data))
+
+        fetch('http://127.0.0.1:8000/dashboard/summary')
+          .then((response) => response.json())
+          .then((data) => setDashboard(data))
+
+        fetch('http://127.0.0.1:8000/movements')
+          .then((response) => response.json())
+          .then((data) => setMovimientos(data))
+      })
+      .catch((error) => {
+        setErrorVenta(error.message)
+      })
+      .finally(() => {
+        setGuardandoVenta(false)
+      })
+  }}
+>
+    <div className="form-group">
+      <label htmlFor="cliente-venta">Cliente</label>
+
+      <select
+        id="cliente-venta"
+        value={nuevaVenta.customer_id}
+        onChange={(e) =>
+          setNuevaVenta({
+            ...nuevaVenta,
+            customer_id: e.target.value
+          })
+        }
+      >
+        <option value="">Seleccionar cliente</option>
+
+        {clientes.map((cliente) => (
+          <option key={cliente.id} value={cliente.id}>
+            {cliente.nombre} — {cliente.documento}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div className="form-row">
+      <div className="form-group">
+        <label htmlFor="producto-venta">Producto</label>
+
+        <select
+          id="producto-venta"
+          value={nuevaVenta.items[0].product_id}
+          onChange={(e) =>
+            setNuevaVenta({
+              ...nuevaVenta,
+              items: [
+                {
+                  ...nuevaVenta.items[0],
+                  product_id: e.target.value
+                }
+              ]
+            })
+          }
+        >
+          <option value="">Seleccionar producto</option>
+
+          {productos.map((producto) => (
+            <option key={producto.id} value={producto.id}>
+              {producto.nombre} — Stock: {producto.stock}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="cantidad-venta">Cantidad</label>
+
+        <input
+          id="cantidad-venta"
+          type="number"
+          min="1"
+          placeholder="Ej: 2"
+          value={nuevaVenta.items[0].cantidad}
+          onChange={(e) =>
+            setNuevaVenta({
+              ...nuevaVenta,
+              items: [
+                {
+                  ...nuevaVenta.items[0],
+                  cantidad: e.target.value
+                }
+              ]
+            })
+          }
+        />
+      </div>
+    </div>
+    {productoVentaSeleccionado && (
+  <div className="card sale-summary">
+    <h3>Resumen de la venta</h3>
+
+    <p>
+      Producto: <strong>{productoVentaSeleccionado.nombre}</strong>
+    </p>
+
+    <p>
+      Precio unitario:{' '}
+      <strong>
+        ${Number(productoVentaSeleccionado.precio).toLocaleString('es-CO')}
+      </strong>
+    </p>
+
+    <p>
+      Cantidad:{' '}
+      <strong>{Number(nuevaVenta.items[0].cantidad || 0)}</strong>
+    </p>
+
+    <p>
+      Total:{' '}
+      <strong>
+        ${Number(subtotalVenta).toLocaleString('es-CO')}
+      </strong>
+    </p>
+  </div>
+
+)}
+
+<button
+  className="btn-primary"
+  type="submit"
+  disabled={guardandoVenta}
+>
+  {guardandoVenta ? 'Registrando...' : 'Registrar venta'}
+</button>
+  </form>
+)}
+      <div className="table-container">
+        <table className="products-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Total</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {ventas.map((venta) => (
+              <tr key={venta.id}>
+                <td>{venta.id}</td>
+                <td>{venta.cliente.nombre}</td>
+                <td>
+                  ${Number(venta.total).toLocaleString('es-CO')}
+                </td>
+                <td>
+                  {new Date(venta.fecha).toLocaleString('es-CO')}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   </>
 )}

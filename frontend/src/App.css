@@ -303,3 +303,24 @@
 .btn-delete:hover {
   opacity: 0.9;
 }
+
+.sale-summary {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 20px;
+  padding: 20px 24px;
+}
+
+.sale-summary h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.sale-summary p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.sale-summary strong {
+  font-size: 16px;
+}
