@@ -59,6 +59,8 @@ const [guardandoVenta, setGuardandoVenta] = useState(false)
 const [mensajeVenta, setMensajeVenta] = useState('')
 
 const [errorVenta, setErrorVenta] = useState('')
+
+const [reporteVentas, setReporteVentas] = useState(null)
   
   
 
@@ -139,6 +141,21 @@ fetch('http://127.0.0.1:8000/movements')
     console.error('Error al cargar ventas:', error)
   })
 
+fetch('http://127.0.0.1:8000/reports/sales')
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error('No se pudo cargar el reporte de ventas')
+    }
+
+    return response.json()
+  })
+  .then((data) => {
+    setReporteVentas(data)
+  })
+  .catch((error) => {
+    console.error('Error al cargar reporte de ventas:', error)
+  })
+
 }, [])
 
 if (error) {
@@ -214,7 +231,11 @@ const subtotalVenta = productoVentaSeleccionado
         Ventas
         </button>
 
-        <button className="menu-item" type="button">
+        <button
+          className={`menu-item ${section === 'reportes' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setSection('reportes')}
+        >
           Reportes
         </button>
 
@@ -1257,6 +1278,86 @@ fetch(urlCliente, {
           </tbody>
         </table>
       </div>
+    </section>
+  </>
+)}
+
+{section === 'reportes' && (
+  <>
+    <header className="header">
+      <h2>Reportes</h2>
+      <p>Consulta el rendimiento de las ventas de Stocker Pro</p>
+    </header>
+
+    <section className="dashboard">
+      <div className="dashboard-title">
+        <h2>Resumen de ventas</h2>
+        <p>Indicadores generales de las ventas registradas.</p>
+      </div>
+{reporteVentas && (
+  <div className="cards">
+    <div className="card">
+      <h3>Total vendido</h3>
+      <p>
+        ${Number(reporteVentas.total_vendido).toLocaleString('es-CO')}
+      </p>
+    </div>
+
+    <div className="card">
+      <h3>Número de ventas</h3>
+      <p>{reporteVentas.numero_ventas}</p>
+    </div>
+
+    <div className="card">
+      <h3>Unidades vendidas</h3>
+      <p>{reporteVentas.unidades_vendidas}</p>
+    </div>
+
+    <div className="card report-product-card">
+      <h3>Producto más vendido</h3>
+      <p>
+        {reporteVentas.producto_mas_vendido
+          ? reporteVentas.producto_mas_vendido.nombre
+          : 'Sin ventas'}
+      </p>
+    </div>
+  </div>
+)}
+{reporteVentas && (
+  <div className="report-section">
+    <div className="dashboard-title">
+      <h2>Ventas recientes</h2>
+      <p>Últimas ventas registradas en Stocker Pro.</p>
+    </div>
+
+    <div className="table-container">
+      <table className="products-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Total</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {reporteVentas.ventas_recientes.map((venta) => (
+            <tr key={venta.id}>
+              <td>{venta.id}</td>
+              <td>
+                ${Number(venta.total).toLocaleString('es-CO')}
+              </td>
+              <td>
+                {new Date(venta.fecha).toLocaleString('es-CO')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
     </section>
   </>
 )}
