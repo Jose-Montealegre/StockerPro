@@ -342,3 +342,43 @@
 .report-section {
   margin-top: 32px;
 }
+
+.recommendation-badge,
+.rotation-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.recommendation-badge.stock_bajo {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.recommendation-badge.agotado {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.rotation-badge.sin_movimiento {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.rotation-badge.rotacion_baja {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.rotation-badge.rotacion_media {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.rotation-badge.rotacion_alta {
+  background-color: #f8d7da;
+  color: #721c24;
+}

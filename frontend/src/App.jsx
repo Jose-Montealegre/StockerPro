@@ -61,6 +61,8 @@ const [mensajeVenta, setMensajeVenta] = useState('')
 const [errorVenta, setErrorVenta] = useState('')
 
 const [reporteVentas, setReporteVentas] = useState(null)
+
+const [recomendaciones, setRecomendaciones] = useState([])
   
   
 
@@ -156,6 +158,21 @@ fetch('http://127.0.0.1:8000/reports/sales')
     console.error('Error al cargar reporte de ventas:', error)
   })
 
+fetch('http://127.0.0.1:8000/recommendations')
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error('No se pudieron cargar las recomendaciones')
+    }
+
+    return response.json()
+  })
+  .then((data) => {
+    setRecomendaciones(data)
+  })
+  .catch((error) => {
+    console.error('Error al cargar recomendaciones:', error)
+  })
+
 }, [])
 
 if (error) {
@@ -239,7 +256,11 @@ const subtotalVenta = productoVentaSeleccionado
           Reportes
         </button>
 
-        <button className="menu-item" type="button">
+        <button
+          className={`menu-item ${section === 'recomendaciones' ? 'active' : ''}`}
+          type="button"
+          onClick={() => setSection('recomendaciones')}
+        >
           Recomendaciones
         </button>
       </nav>
@@ -1358,6 +1379,69 @@ fetch(urlCliente, {
   </div>
 )}
 
+    </section>
+  </>
+)}
+
+{section === 'recomendaciones' && (
+  <>
+    <header className="header">
+      <h2>Recomendaciones</h2>
+      <p>
+        Consulta sugerencias de inventario según el stock y movimiento de los productos
+      </p>
+    </header>
+
+    <section className="dashboard">
+      <div className="dashboard-title">
+        <h2>Recomendaciones de inventario</h2>
+        <p>
+          Stocker Pro analiza el comportamiento reciente de los productos para apoyar la reposición de inventario.
+        </p>
+      </div>
+      <div className="table-container">
+  <table className="products-table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Stock actual</th>
+        <th>Estado</th>
+        <th>Salidas 7 días</th>
+        <th>Rotación</th>
+        <th>Reposición sugerida</th>
+        <th>Recomendación</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {recomendaciones.map((recomendacion) => (
+        <tr key={recomendacion.producto_id}>
+          <td>{recomendacion.producto}</td>
+          <td>{recomendacion.stock_actual}</td>
+          <td>
+  <span
+    className={`recommendation-badge ${recomendacion.estado.toLowerCase()}`}
+  >
+    {recomendacion.estado.replaceAll('_', ' ')}
+  </span>
+</td>
+
+<td>{recomendacion.salidas_ultimos_7_dias}</td>
+
+<td>
+  <span
+    className={`rotation-badge ${recomendacion.rotacion.toLowerCase()}`}
+  >
+    {recomendacion.rotacion.replaceAll('_', ' ')}
+  </span>
+</td>
+          <td>{recomendacion.cantidad_sugerida_reposicion}</td>
+          <td>{recomendacion.recomendacion}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
     </section>
   </>
 )}
