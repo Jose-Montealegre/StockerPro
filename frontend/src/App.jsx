@@ -641,6 +641,12 @@ const subtotalVenta = productoVentaSeleccionado
   .then((data) => {
     setMovimientos(data)
   })
+  
+  fetch('http://127.0.0.1:8000/recommendations')
+    .then((response) => response.json())
+    .then((data) => {
+      setRecomendaciones(data)
+    })
 })
   .catch((error) => {
   console.error('Error al registrar el movimiento:', error)
@@ -1149,6 +1155,14 @@ fetch(urlCliente, {
         fetch('http://127.0.0.1:8000/movements')
           .then((response) => response.json())
           .then((data) => setMovimientos(data))
+
+        fetch('http://127.0.0.1:8000/reports/sales')
+          .then((response) => response.json())
+          .then((data) => setReporteVentas(data))
+
+        fetch('http://127.0.0.1:8000/recommendations')
+          .then((response) => response.json())
+          .then((data) => setRecomendaciones(data))
       })
       .catch((error) => {
         setErrorVenta(error.message)
