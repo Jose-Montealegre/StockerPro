@@ -63,6 +63,9 @@ const [errorVenta, setErrorVenta] = useState('')
 const [reporteVentas, setReporteVentas] = useState(null)
 
 const [recomendaciones, setRecomendaciones] = useState([])
+const [analisisIA, setAnalisisIA] = useState('')
+const [cargandoIA, setCargandoIA] = useState(false)
+const [errorIA, setErrorIA] = useState('')
   
   
 
@@ -196,6 +199,35 @@ const subtotalVenta = productoVentaSeleccionado
   ? productoVentaSeleccionado.precio *
     Number(nuevaVenta.items[0].cantidad || 0)
   : 0
+
+  
+const generarAnalisisIA = async () => {
+  if (cargandoIA) return
+
+  setCargandoIA(true)
+  setErrorIA('')
+  setAnalisisIA('')
+
+  try {
+    const response = await fetch(
+      'http://127.0.0.1:8000/recommendations/ai'
+    )
+
+    if (!response.ok) {
+      throw new Error('No se pudo generar el análisis inteligente.')
+    }
+
+    const data = await response.json()
+
+    setAnalisisIA(data.explicacion)
+  } catch {
+    setErrorIA(
+      'No fue posible conectar con la inteligencia artificial. Intenta nuevamente.'
+    )
+  } finally {
+    setCargandoIA(false)
+  }
+}
 
 
 
@@ -1456,6 +1488,37 @@ fetch(urlCliente, {
     </tbody>
   </table>
 </div>
+
+<div className="ai-analysis">
+  <h3>Recomendaciones inteligentes con IA</h3>
+
+  <p>
+    Obtén un análisis generado por inteligencia artificial
+    a partir de los datos actuales de tu inventario.
+  </p>
+
+  <button
+    type="button"
+    onClick={generarAnalisisIA}
+    disabled={cargandoIA}
+  >
+    {cargandoIA ? 'Generando análisis...' : 'Generar análisis con IA'}
+  </button>
+
+  {errorIA && (
+    <p role="alert">{errorIA}</p>
+  )}
+
+  {analisisIA && (
+    <div className="ai-result">
+      <h4>Análisis inteligente de inventario</h4>
+      <div className="ai-analysis-text">
+  {analisisIA.replaceAll('**', '')}
+</div>
+    </div>
+  )}
+</div>
+
     </section>
   </>
 )}
